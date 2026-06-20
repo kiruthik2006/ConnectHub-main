@@ -461,7 +461,7 @@ export const replyToStory = async (req, res) => {
     const storyUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/${
       story.userId.username
     }/story`;
-    const messageText = `Replied to your story: "${text.trim()}"\n\nView story: ${storyUrl}`;
+    const messageText = `Replied to your story: "${text.trim()}"\n\n[click here to view story](${storyUrl})`;
 
     const message = new Message({
       sender: userId,

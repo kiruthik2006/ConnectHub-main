@@ -16,6 +16,7 @@ import {
 } from "@chakra-ui/react";
 import React, { useState, useMemo } from "react";
 import { useRecoilValue } from "recoil";
+import { useNavigate } from "react-router-dom";
 import { selectedConversationAtom } from "../atoms/conversationAtom";
 import userAtom from "../atoms/userAtom";
 import { BsCheck2All } from "react-icons/bs";
@@ -35,11 +36,12 @@ const Message = ({ ownMessage, message, onDelete }) => {
   const currentUser = useRecoilValue(userAtom);
   const [isImgLoading, setIsImgLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
 
   // Extract URLs from message text
   const extractUrls = (text) => {
     if (!text) return [];
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urlRegex = /(https?:\/\/[^\s)]+)/g;
     const urls = text.match(urlRegex) || [];
     return urls.filter((url) => {
       try {
@@ -59,6 +61,81 @@ const Message = ({ ownMessage, message, onDelete }) => {
   const urlsInMessage = useMemo(() => {
     return message.text ? extractUrls(message.text) : [];
   }, [message.text]);
+
+  const renderMessageText = (text, textColor) => {
+    if (!text) return null;
+
+    // Regex to match markdown links: [Link Text](url)
+    const markdownLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      const matchIndex = match.index;
+      // Add text before the link
+      if (matchIndex > lastIndex) {
+        parts.push(text.substring(lastIndex, matchIndex));
+      }
+
+      const linkText = match[1];
+      const linkUrl = match[2];
+
+      let isInternal = false;
+      let path = "";
+      try {
+        const urlObj = new URL(linkUrl);
+        // Check if the host matches our current host or is localhost/render
+        if (
+          urlObj.hostname === window.location.hostname ||
+          urlObj.hostname === "localhost" ||
+          urlObj.hostname === "127.0.0.1" ||
+          urlObj.hostname.endsWith(".onrender.com")
+        ) {
+          isInternal = true;
+          path = urlObj.pathname + urlObj.search + urlObj.hash;
+        }
+      } catch {
+        // Fallback for relative paths if any
+        if (linkUrl.startsWith("/")) {
+          isInternal = true;
+          path = linkUrl;
+        }
+      }
+
+      parts.push(
+        <Link
+          key={matchIndex}
+          href={linkUrl}
+          isExternal={!isInternal}
+          color={textColor === "white" ? "cyan.200" : "blue.500"}
+          textDecoration="underline"
+          fontWeight="semibold"
+          _hover={{ color: textColor === "white" ? "cyan.100" : "blue.600" }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isInternal) {
+              navigate(path);
+            } else {
+              window.open(linkUrl, "_blank", "noopener,noreferrer");
+            }
+          }}
+        >
+          {linkText}
+        </Link>
+      );
+
+      lastIndex = markdownLinkRegex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
 
   // Check if message is deleted for everyone (tombstone)
   const isTombstone = message.deletedForAll || message.type === "tombstone";
@@ -166,7 +243,7 @@ const Message = ({ ownMessage, message, onDelete }) => {
                   whiteSpace="pre-wrap"
                   wordBreak="break-word"
                 >
-                  {message.text}
+                  {renderMessageText(message.text, "white")}
                 </Text>
                 <Box
                   alignSelf={"flex-end"}
@@ -349,7 +426,7 @@ const Message = ({ ownMessage, message, onDelete }) => {
                 whiteSpace="pre-wrap"
                 wordBreak="break-word"
               >
-                {message.text}
+                {renderMessageText(message.text, "dark")}
               </Text>
               {/* Link Previews */}
               {urlsInMessage.length > 0 && (
