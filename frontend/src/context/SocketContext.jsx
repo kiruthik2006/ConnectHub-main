@@ -19,12 +19,12 @@ export const SocketContextProvider = ({ children }) => {
   const [selectedUserId, setSelectedUserId] = useState();
   // Determine socket URL based on environment
   const getSocketUrl = () => {
-    // In development, use localhost
-    if (import.meta.env.DEV || window.location.hostname === "localhost") {
-      return "http://localhost:4900";
+    // In development (Vite), connect to backend port 4900
+    if (import.meta.env.DEV) {
+      return "http://127.0.0.1:4900";
     }
-    // In production, use the production URL
-    return "https://connecthub-main.onrender.com";
+    // In production, connect to the origin serving the client
+    return window.location.origin;
   };
 
   useEffect(() => {

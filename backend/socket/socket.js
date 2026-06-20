@@ -13,6 +13,10 @@ const server = http.createServer(app);
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3005",
+  "http://localhost:4900",
+  "http://localhost:10000",
+  "http://127.0.0.1:4900",
+  "http://127.0.0.1:10000",
   "http://localhost:5173", // Vite default port
   "https://connecthub-oddy.onrender.com",
   "https://connecthub-main.onrender.com",
@@ -31,17 +35,27 @@ function isRenderOrigin(origin) {
   return renderPattern.test(normalized);
 }
 
+// Helper function to check if origin is a local network IP
+function isLocalNetworkOrigin(origin) {
+  if (!origin) return false;
+  // Match common local network IP ranges: 192.168.x.x, 10.x.x.x, 172.16-31.x.x, 127.x.x.x, localhost
+  const localNetworkPattern =
+    /^https?:\/\/(localhost|127\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+):\d+$/;
+  return localNetworkPattern.test(origin);
+}
+
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
       // Allow requests with no origin (like mobile apps, Postman, etc.)
       if (!origin) return callback(null, true);
 
-      // In development, allow all localhost origins
+      // In development, allow all localhost origins and local network IPs
       if (process.env.NODE_ENV !== "production") {
         if (
           origin.startsWith("http://localhost:") ||
-          origin.startsWith("http://127.0.0.1:")
+          origin.startsWith("http://127.0.0.1:") ||
+          isLocalNetworkOrigin(origin)
         ) {
           return callback(null, true);
         }
@@ -80,7 +94,7 @@ const io = new Server(server, {
 });
 
 export const getRecipiantSocketId = (recipientId) => {
-  return userSocketMap[recipientId];
+  return userSocketMap[recipientId ? recipientId.toString() : recipientId];
 };
 
 const userSocketMap = {}; //userId :socketId

@@ -28,6 +28,10 @@ dotenv.config();
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3005",
+  "http://localhost:4900",
+  "http://localhost:10000",
+  "http://127.0.0.1:4900",
+  "http://127.0.0.1:10000",
   "http://localhost:5173", // Vite default port
   "https://connecthub-oddy.onrender.com",
   "https://connecthub-15.onrender.com",
@@ -136,7 +140,7 @@ const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER
 
 // Force port 4901 for development (override any PORT env var)
 const usePort =
-  isProduction ? process.env.PORT || 4900 : 4900;
+  isProduction ? Number(process.env.PORT) || 4900 : 4900;
 
 const __dirname = path.resolve();
 
