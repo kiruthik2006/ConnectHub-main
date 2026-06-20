@@ -134,7 +134,7 @@ cloudinary.config({
 
 // Force port 4901 for development (override any PORT env var)
 const usePort =
-  process.env.NODE_ENV === "production" ? process.env.PORT || 4900 : 4900;
+  isProduction ? process.env.PORT || 4900 : 4900;
 
 const __dirname = path.resolve();
 
@@ -148,10 +148,10 @@ app.use("/api/stories", storyRoutes);
 
 // http://localhost:4900 =>backend run,add frontend
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER;
 
-  // react app
+if (isProduction) {
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
