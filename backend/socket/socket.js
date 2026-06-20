@@ -15,6 +15,7 @@ const allowedOrigins = [
   "http://localhost:3005",
   "http://localhost:5173", // Vite default port
   "https://connecthub-oddy.onrender.com",
+  "https://connecthub-main.onrender.com",
   "https://connecthub-15.onrender.com",
   process.env.FRONTEND_URL,
   process.env.RENDER_EXTERNAL_URL, // Render provides this automatically
