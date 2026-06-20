@@ -132,6 +132,8 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER;
+
 // Force port 4901 for development (override any PORT env var)
 const usePort =
   isProduction ? process.env.PORT || 4900 : 4900;
@@ -145,10 +147,6 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/stories", storyRoutes);
-
-// http://localhost:4900 =>backend run,add frontend
-
-const isProduction = process.env.NODE_ENV === "production" || process.env.RENDER;
 
 if (isProduction) {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));
