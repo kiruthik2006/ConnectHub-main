@@ -69,6 +69,7 @@ export const createPost = async (req, res) => {
 
     // Check if video file was uploaded via multipart/form-data (GridFS)
     const videoFile = req.file;
+    const hasVideoFile = !!videoFile;
 
     // ========== VALIDATION ==========
     if (!postedBy) {
