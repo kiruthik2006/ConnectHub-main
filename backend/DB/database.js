@@ -6,7 +6,7 @@ dotenv.config();
 export const connectedDB = async () => {
   try {
     const mongoURI =
-      process.env.MONGO_URI ||
+      process.env.MONGO_URL ||
       "mongodb+srv://arunpravin125_db_user:ffmb0mlrMWvdEbWl@cluster0.n3d9lkp.mongodb.net/social?appName=Cluster0";
 
     console.log("Attempting to connect to MongoDB...");
